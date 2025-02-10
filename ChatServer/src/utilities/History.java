@@ -21,25 +21,22 @@ public class History {
             try {
                 con = DataBase.connect();
 
-                // Inserează mesajul în baza de date indiferent dacă utilizatorul e online sau nu
                 String sql = "INSERT INTO messages (username, message, receiver, ip_address, seen) VALUES (?, ?, ?, ?, ?)";
                 pst = con.prepareStatement(sql);
                 pst.setString(1, username);
                 pst.setString(2, message);
                 pst.setString(3, receiver);
                 pst.setString(4, "ipAdress");
-                pst.setInt(5, 0); // Inițial mesajul este nevăzut
+                pst.setInt(5, 0); 
 
                 pst.executeUpdate();
                 System.out.println("Message saved to database.");
 
-                // Dacă destinatarul este online, trimite-i mesajul și marchează-l ca văzut
                 DataOutputStream dos = clientWriters.get(receiver);
                 if (dos != null) {
                     dos.writeUTF(username + ": " + message);
                     System.out.println("Message sent to " + receiver + " in real-time.");
 
-                    // Marchează mesajele ca "văzute" imediat
                     String updateSql = "UPDATE messages SET seen = 1 WHERE receiver = ? AND username = ? AND message = ?";
                     try (PreparedStatement updatePst = con.prepareStatement(updateSql)) {
                         updatePst.setString(1, receiver);
@@ -76,7 +73,6 @@ public class History {
                 con = DataBase.connect();
                 System.out.println("Connected to the database for retrieving undelivered messages.");
 
-                // Selectează DOAR mesajele care nu au fost deja văzute (seen = 0)
                 String sql = "SELECT username, message FROM messages WHERE receiver = ? AND seen = 0";
                 pst = con.prepareStatement(sql);
                 pst.setString(1, username);
@@ -88,12 +84,10 @@ public class History {
                         String sender = rs.getString("username");
                         String message = rs.getString("message");
 
-                        // Trimite mesajul către utilizator
                         dos.writeUTF(sender + ": " + message);
                         System.out.println("Delivered undelivered message from " + sender + " to " + username);
                     }
 
-                    // După ce am trimis toate mesajele, le marcăm ca văzute
                     String updateSql = "UPDATE messages SET seen = 1 WHERE receiver = ?";
                     try (PreparedStatement updatePst = con.prepareStatement(updateSql)) {
                         updatePst.setString(1, username);
