@@ -9,7 +9,6 @@ public class FileTransfer {
     private static final String DB_USER = "root";
     private static final String DB_PASSWORD = "parola";
 
-    // Metoda pentru primirea fișierului pe server
     public static void receiveFile(String username, String targetUser, ServerSocket serverSocket) {
         String receivedFileName = "";
         String filePath = "C:\\Users\\franc\\Desktop\\ChatServer\\received_files";
@@ -17,12 +16,12 @@ public class FileTransfer {
         try (Socket socket = serverSocket.accept();
              DataInputStream in = new DataInputStream(socket.getInputStream())) {
 
-            String fileName = in.readUTF(); // Citește numele fișierului
+            String fileName = in.readUTF(); 
             System.out.println("Fișierul primit: " + fileName);
             receivedFileName = fileName;
             filePath = filePath + receivedFileName;
 
-            long fileSize = in.readLong(); // Citește dimensiunea fișierului
+            long fileSize = in.readLong(); 
             System.out.println("Dimensiunea fișierului: " + fileSize);
 
             try (FileOutputStream fos = new FileOutputStream(filePath)) {
