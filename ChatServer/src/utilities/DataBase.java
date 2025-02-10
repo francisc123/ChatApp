@@ -15,11 +15,8 @@ public class DataBase {
 
     public static Connection connect() {
         try {
-            // Încarcă driverul MySQL
             Class.forName("com.mysql.cj.jdbc.Driver");
-            // Creează o nouă conexiune
             connection = DriverManager.getConnection(URL, USER, PASSWORD);
-            //System.out.println("Connection established!");
         } catch (ClassNotFoundException e) {
             System.err.println("MySQL JDBC driver not found!");
             e.printStackTrace();
@@ -71,7 +68,7 @@ public class DataBase {
         try {
             conn = connect();
             pst = conn.prepareStatement(sql);
-            pst.setString(1, username); // Setează parametrul corect
+            pst.setString(1, username); 
             pst.setString(2, username);
 
             rs = pst.executeQuery();
@@ -108,17 +105,14 @@ public class DataBase {
             String fileName = file.getName();
             String fileType = fileName.substring(fileName.lastIndexOf(".") + 1);
 
-            // Citește fișierul ca InputStream
             FileInputStream fis = new FileInputStream(file);
 
-            // Obține dimensiunea fișierului în bytes
             long sizeInBytes = file.length();
 
             pst.setString(1, fileName);
             pst.setString(2, fileType);
             pst.setLong(3, sizeInBytes);
             pst.setString(4, "C:\\Users\\franc\\Desktop\\ChatServer\\received_files\\" + fileName);
-              // Folosim direct bytes în loc de MB
             pst.setString(5, sender);
             pst.setString(6, receiver);
 
@@ -148,9 +142,6 @@ public class DataBase {
                 int fileId = rs.getInt("id");
                 String folderPath = rs.getString("filePath");
                 System.out.println("Folder path from DB: " + folderPath);
-
-                // Construiește calea completă către fișier
-                // Folosește File.separator pentru compatibilitate cross-platform
                 String fullPath = folderPath + File.separator + fileName;
 
                 File file = new File(fullPath);
@@ -159,7 +150,6 @@ public class DataBase {
                     return file;
                 } else {
 
-                    // Încearcă și în directorul curent al serverului
                     File alternativePath = new File("received_files" + File.separator + fileName);
                     if (alternativePath.exists()) {
                         System.out.println("File found in alternative location: " + alternativePath.getAbsolutePath());
@@ -181,7 +171,6 @@ public class DataBase {
         return null;
     }
 
-    // Adaugă și o metodă pentru a verifica dacă un fișier există și are permisiuni de citire:
     private static boolean isFileAccessible(File file) {
         try {
             return file.exists() && file.canRead() && file.isFile();
@@ -198,7 +187,7 @@ public class DataBase {
         try (Connection conn = connect();
              PreparedStatement pst = conn.prepareStatement(sql)) {
 
-            pst.setString(1, fileName);  // Folosește numele fișierului în loc de ID
+            pst.setString(1, fileName);  
             ResultSet rs = pst.executeQuery();
 
             if (rs.next()) {
@@ -206,21 +195,18 @@ public class DataBase {
                 InputStream input = rs.getBinaryStream("file_data");
                 long fileSize = rs.getLong("size");
 
-                // Obține fluxul de ieșire pentru a trimite fișierul la client
                 OutputStream output = clientSocket.getOutputStream();
 
-                // Trimite numele fișierului și dimensiunea
                 DataOutputStream dataOutput = new DataOutputStream(output);
-                dataOutput.writeUTF(fileNameFromDb);   // Trimite numele fișierului
-                dataOutput.writeLong(fileSize);        // Trimite dimensiunea fișierului
+                dataOutput.writeUTF(fileNameFromDb);   
+                dataOutput.writeLong(fileSize);       
 
-                // Trimite fișierul în bucăți
                 byte[] buffer = new byte[1024];
                 int bytesRead;
                 while ((bytesRead = input.read(buffer)) != -1) {
                     output.write(buffer, 0, bytesRead);
                 }
-                output.flush();  // Asigură-te că datele sunt trimise complet
+                output.flush(); 
 
                 input.close();
                 System.out.println("File " + fileNameFromDb + " has been sent to the client.");
@@ -240,7 +226,5 @@ public class DataBase {
 
     public static void main(String[] args) {
         connect();
-        //insertFile(); // Testează inserarea unui fișier
-        //closeConnection();
     }
 }
