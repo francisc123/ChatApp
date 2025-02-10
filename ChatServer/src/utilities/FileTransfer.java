@@ -17,12 +17,12 @@ public class FileTransfer {
              DataInputStream in = new DataInputStream(socket.getInputStream())) {
 
             String fileName = in.readUTF(); 
-            System.out.println("Fișierul primit: " + fileName);
+            System.out.println("Received file: " + fileName);
             receivedFileName = fileName;
             filePath = filePath + receivedFileName;
 
             long fileSize = in.readLong(); 
-            System.out.println("Dimensiunea fișierului: " + fileSize);
+            System.out.println("File dimension: " + fileSize);
 
             try (FileOutputStream fos = new FileOutputStream(filePath)) {
                 byte[] buffer = new byte[4096];
@@ -34,7 +34,7 @@ public class FileTransfer {
                     totalBytesRead += bytesRead;
                 }
 
-                System.out.println("Fișierul a fost salvat ca: " + receivedFileName);
+                System.out.println("File saved as: " + receivedFileName);
             }
         } catch (IOException e) {
             e.printStackTrace();
