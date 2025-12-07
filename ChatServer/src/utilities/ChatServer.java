@@ -264,7 +264,6 @@ public class ChatServer {
 
                         case CHAT:
                             System.out.println("CHAT STATE");
-                            try {
                                 String inputMessage = in.readUTF();
 
                                 if (inputMessage == null) {
@@ -390,9 +389,6 @@ public class ChatServer {
                                         }
                                         break;
                                 }
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
                             break;
 
                         case EXIT:
@@ -401,13 +397,31 @@ public class ChatServer {
                             break;
                     }
                 }
-            } catch (IOException e) {
+            }
+            catch (EOFException | SocketException e) {
+                System.out.println("Client disconnected abruptly: " + (username != null ? username : "Unknown"));
+            }
+            catch (IOException e) {
                 e.printStackTrace();
+            } finally {
+                try {
+                    if(username != null) {
+                        clientWriters.remove(username);
+                        System.out.println("Client disconnected from user: " + username);
+                    }
+                    if(socket != null && socket.isClosed()) {
+                        socket.close();
+                    }
+                    synchronized (clientWriters) {
+                        clientWriters.remove(username);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
 }
-
 
 
 
