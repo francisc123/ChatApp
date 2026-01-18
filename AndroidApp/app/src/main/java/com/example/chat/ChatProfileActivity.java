@@ -112,7 +112,6 @@ public class ChatProfileActivity extends AppCompatActivity {
     }
 
     private void setupImagesList() {
-        // Grid cu 3 coloane pentru poze
         recyclerImages.setLayoutManager(new GridLayoutManager(this, 3));
         recyclerImages.setAdapter(new RecyclerView.Adapter<ImgHolder>() {
             @NonNull
@@ -143,20 +142,14 @@ public class ChatProfileActivity extends AppCompatActivity {
     }
 
     private void setupFilesList() {
-        // Setăm managerul de layout
         recyclerFiles.setLayoutManager(new LinearLayoutManager(this));
 
-        // Setăm adapterul
         recyclerFiles.setAdapter(new RecyclerView.Adapter<FileHolder>() {
             @NonNull
             @Override
             public FileHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-                // --- VARIANTA PROGRAMATICĂ (FĂRĂ XML) ---
-                // Aceasta elimină orice eroare legată de "Inflate" sau fișiere lipsă
-
                 TextView tv = new TextView(parent.getContext());
 
-                // 1. DIMENSIUNI OBLIGATORII (fără ele crapă)
                 RecyclerView.LayoutParams params = new RecyclerView.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT, // Lățime
                         ViewGroup.LayoutParams.WRAP_CONTENT  // Înălțime
@@ -164,13 +157,12 @@ public class ChatProfileActivity extends AppCompatActivity {
                 params.setMargins(0, 5, 0, 5); // Puțin spațiu între elemente
                 tv.setLayoutParams(params);
 
-                // 2. STILIZARE
                 tv.setPadding(40, 40, 40, 40); // Spațiu interior
                 tv.setTextSize(16);
                 tv.setTextColor(android.graphics.Color.BLACK);
                 tv.setBackgroundColor(android.graphics.Color.WHITE); // Fundal alb
 
-                // Opțional: adăugăm o mică iconiță în stânga textului
+
                 tv.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_file, 0, 0, 0);
                 tv.setCompoundDrawablePadding(20);
 
@@ -181,14 +173,11 @@ public class ChatProfileActivity extends AppCompatActivity {
             public void onBindViewHolder(@NonNull FileHolder holder, int position) {
                 Message m = fileList.get(position);
 
-                // Luăm TextView-ul direct din itemView (pentru că noi l-am creat mai sus)
                 TextView tv = (TextView) holder.itemView;
 
-                // Textul de afișat
                 String numeFisier = (m.fileName != null) ? m.fileName : "Document necunoscut";
                 tv.setText(numeFisier);
 
-                // Click pe element
                 holder.itemView.setOnClickListener(v -> {
                     if (m.filePath != null && m.fileName != null && m.fileName.toLowerCase().endsWith(".pdf")) {
                         try {

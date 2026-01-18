@@ -24,7 +24,6 @@ public class MainActivity extends AppCompatActivity {
     private MainActivity.UsersAdapter adapter;
     private List<User> users = new ArrayList<>();
 
-    // --- MODIFICARE 1: Variabila pentru a ști dacă abia am intrat în aplicație ---
     private boolean isFirstLoad = true;
     private volatile boolean isLoading = false;
     private volatile boolean isListening = false;
@@ -48,11 +47,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // --- MODIFICARE 3: Metoda primește un parametru ---
-    // În MainActivity.java -> refreshInbox
-
-    // În MainActivity.java
-
     private void startLiveListener(boolean sendBackCommand) {
         if (isListening) return; // Evităm dublarea firelor
         isListening = true;
@@ -65,17 +59,13 @@ public class MainActivity extends AppCompatActivity {
                 if (sendBackCommand) {
                     out.writeUTF("BACK_ANDROID");
 
-                    // --- AICI ESTE FIX-UL CRITIC PENTRU MESAJELE VECHI ---
-                    // Chiar și în modul live, trebuie să așteptăm ca ChatActivity să moară
                     int retries = 0;
                     while (ConnectionManager.getInstance().isChatActive() && retries < 40) {
                         try { Thread.sleep(50); } catch (InterruptedException e) {}
                         retries++;
                     }
-                    // -----------------------------------------------------
                 }
 
-                // --- BUCLA INFINITĂ DE ASCULTARE (PENTRU LIVE UPDATES) ---
                 while (isListening) {
                     String msg = in.readUTF();
                     Log.d("DEBUG_CHAT", "Main loop primit: " + msg);
@@ -101,7 +91,6 @@ public class MainActivity extends AppCompatActivity {
                         updateListUI(rawData);
                     }
                     else if (msg.startsWith("MSG_LIVE|")) {
-                        // Mesaj nou în timp real!
                         String[] parts = msg.split("\\|", 3);
                         if (parts.length == 3) {
                             updateListLocally(parts[1], parts[2]);
@@ -114,10 +103,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }).start();
     }
-
-    // Helper pentru actualizarea listei complete
-    // Helper pentru actualizarea listei complete (când vine INBOX_DATA)
-    // În MainActivity.java
 
     private void updateListUI(List<String> data) {
         List<User> temporaryList = new ArrayList<>();
@@ -166,11 +151,11 @@ public class MainActivity extends AppCompatActivity {
 
                 String currentImage = oldUser.profileImageBase64;
 
-                users.remove(index); // Scoatem userul de unde era
-                users.add(0, new User(sender, message, newCount, currentImage)); // Îl punem primul
+                users.remove(index);
+                users.add(0, new User(sender, message, newCount, currentImage));
                 adapter.notifyDataSetChanged();
             } else {
-                users.add(0, new User(sender, message, 1, null)); // User nou
+                users.add(0, new User(sender, message, 1, null));
                 adapter.notifyDataSetChanged();
             }
         });
@@ -284,11 +269,9 @@ public class MainActivity extends AppCompatActivity {
             }
 
             holder.itemView.setOnClickListener(v -> {
-                // Blocăm click-uri multiple
                 if (!isListening || isTransitioning) return;
 
                 isTransitioning = true;
-                // Oprim listenerul din fundal înainte să schimbăm scena
                 new Thread(() -> {
                     try {
                         // 1. Cerem oprirea
@@ -301,7 +284,7 @@ public class MainActivity extends AppCompatActivity {
                             safety++;
                         }
 
-                        // 3. Acum e sigur să trimitem numele userului pentru ChatActivity
+                        // 3. Trimitem numele userului pentru ChatActivity
                         ConnectionManager.getInstance().getOut().writeUTF(user.name);
                         ConnectionManager.getInstance().tempChatImage = user.profileImageBase64;
 

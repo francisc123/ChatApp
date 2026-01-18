@@ -33,7 +33,7 @@ import androidx.exifinterface.media.ExifInterface;
 public class SettingsActivity extends AppCompatActivity {
 
     private ImageView imgProfile;
-    private EditText editName; // Îl facem variabilă globală ca să îl accesăm din dialog
+    private EditText editName;
     private ActivityResultLauncher<Intent> pickImageLauncher;
 
     @Override
@@ -62,14 +62,12 @@ public class SettingsActivity extends AppCompatActivity {
         editName.setOnClickListener(v -> showChangeNameDialog());
 
         // 4. Logica CLICK pe Schimbă Poza
-        // 4. Logica CLICK pe Schimbă Poza
         pickImageLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                         Uri imageUri = result.getData().getData();
                         try {
-                            // --- MODIFICARE PENTRU ROTIRE ---
 
                             // 1. Decodăm imaginea brută (care poate fi rotită greșit)
                             InputStream imageStream = getContentResolver().openInputStream(imageUri);
@@ -130,9 +128,6 @@ public class SettingsActivity extends AppCompatActivity {
                 // 2. Actualizăm în Manager (pentru sesiunea curentă)
                 ConnectionManager.getInstance().setMyUsername(newName);
 
-                // 3. (Opțional) Aici ai putea trimite noul nume la server, dacă ai comandă pentru asta
-                // ConnectionManager.getInstance().sendMessage("CMD_CHANGE_NAME|" + newName);
-
                 Toast.makeText(this, "Nume schimbat!", Toast.LENGTH_SHORT).show();
             }
         });
@@ -177,10 +172,6 @@ public class SettingsActivity extends AppCompatActivity {
                 .putString("profile_image", encodedImage)
                 .apply();
 
-        // Salvăm și în ConnectionManager ca să fie disponibilă în sesiune
-        // (Dacă ai metoda setMyProfileImage în ConnectionManager, decomentează linia de mai jos)
-        // ConnectionManager.getInstance().setMyProfileImage(encodedImage);
-
         // Trimitem la server
         ConnectionManager.getInstance().sendProfileImage(encodedImage);
 
@@ -202,12 +193,6 @@ public class SettingsActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
-        // Fallback: Dacă nu e în Prefs, poate e în ConnectionManager (venită de la server la login)
-        // Decomentează dacă ai câmpul tempProfileImage în ConnectionManager
-        /* else if (ConnectionManager.getInstance().tempProfileImage != null) {
-             // ... logica de decodare similară ...
-        }
-        */
     }
 
     @Override
@@ -215,9 +200,7 @@ public class SettingsActivity extends AppCompatActivity {
         finish();
         return true;
     }
-    /**
-     * Verifică datele EXIF ale imaginii și o rotește dacă este necesar.
-     */
+
     private Bitmap rotateImageIfRequired(Bitmap img, Uri selectedImage) throws IOException, FileNotFoundException {
         InputStream input = getContentResolver().openInputStream(selectedImage);
         ExifInterface ei;
@@ -245,9 +228,7 @@ public class SettingsActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Rotește efectiv un obiect Bitmap cu un anumit număr de grade.
-     */
+
     private Bitmap rotateBitmap(Bitmap img, int degree) {
         Matrix matrix = new Matrix();
         matrix.postRotate(degree);
@@ -255,7 +236,6 @@ public class SettingsActivity extends AppCompatActivity {
         // Creăm o nouă imagine rotită
         Bitmap rotatedImg = Bitmap.createBitmap(img, 0, 0, img.getWidth(), img.getHeight(), matrix, true);
 
-        // Eliberăm memoria ocupată de imaginea veche (foarte important!)
         img.recycle();
 
         return rotatedImg;

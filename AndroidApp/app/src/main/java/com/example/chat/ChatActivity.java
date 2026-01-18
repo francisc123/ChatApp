@@ -253,21 +253,16 @@ public class ChatActivity extends AppCompatActivity {
         });
     }
 
-    // --- METODA NOUĂ PENTRU A DETECTA IMAGINILE ---
-    // Această metodă lipsea din fișierul tău
     private Message parseMessageContent(String content, boolean isMine) {
         boolean isImageTag = content.startsWith("[IMAGE]:");
         boolean isFileTag = content.startsWith("[FILE]:");
 
-        // Curățăm numele
-        String fileName = content;
+        String fileName = content ;
         if (isImageTag) fileName = content.substring(8).trim();
         else if (isFileTag) fileName = content.substring(7).trim();
 
         String lowerName = fileName.toLowerCase();
 
-        // 1. REGULA DE AUR: Verificăm ÎNTÂI extensia
-        // Dacă se termină în jpg/png, e poză, indiferent de ce tag are.
         boolean isImageExt = lowerName.endsWith(".jpg") ||
                 lowerName.endsWith(".jpeg") ||
                 lowerName.endsWith(".png") ||
@@ -281,9 +276,6 @@ public class ChatActivity extends AppCompatActivity {
             return new Message(content, isMine, 1, fileName, localFile.getAbsolutePath());
         }
 
-        // 2. ORICE ALTCEVA E FIȘIER (Type 2)
-        // Dacă are tag [FILE] sau [IMAGE] (dar nu e jpg/png) sau e pdf -> E FIȘIER
-        // Asta rezolvă problema cu .doc trimis ca imagine -> devine fișier.
         else if (isFileTag || isImageTag || lowerName.endsWith(".pdf")) {
             java.io.File localFile = new java.io.File(getFilesDir(), fileName);
             if(!localFile.exists() && !isMine) {
@@ -292,7 +284,6 @@ public class ChatActivity extends AppCompatActivity {
             return new Message(content, isMine, 2, fileName, localFile.getAbsolutePath());
         }
 
-        // 3. TEXT SIMPLU
         else {
             return new Message(content, isMine);
         }
@@ -321,7 +312,6 @@ public class ChatActivity extends AppCompatActivity {
                     String fileName = in.readUTF();
                     long fileSize = in.readLong();
 
-                    // Salvăm în folderul privat al aplicației
                     java.io.File file = new java.io.File(getFilesDir(), fileName);
                     try (java.io.FileOutputStream fos = new java.io.FileOutputStream(file)) {
                         byte[] buffer = new byte[4096];
@@ -354,9 +344,9 @@ public class ChatActivity extends AppCompatActivity {
                                         lowerName.endsWith(".webp");
 
                                 if (isImage) {
-                                    m.type = 1; // Este Imagine
+                                    m.type = 1;
                                 } else {
-                                    m.type = 2; // Este Fișier (PDF, DOC, orice altceva)
+                                    m.type = 2;
                                 }
 
                                 adapter.notifyItemChanged(i);
@@ -368,9 +358,8 @@ public class ChatActivity extends AppCompatActivity {
                             Toast.makeText(ChatActivity.this, "Fișier primit!", Toast.LENGTH_SHORT).show();
                         }
                     });
-                    continue; // Sărim peste restul verificărilor pentru acest ciclu
+                    continue;
                 }
-                // -------------------------------------------
 
                 if("ACK_BACK".equals(msg)) {
                     isListening = false;
@@ -378,9 +367,7 @@ public class ChatActivity extends AppCompatActivity {
                     return;
                 }
 
-                // ... (restul codului pentru istoric și MSG_LIVE rămâne la fel) ...
                 if ("CHAT_HISTORY".equals(msg)) {
-                    // ... codul tău existent pentru istoric ...
                     int size = in.readInt();
                     List<Message> history = new ArrayList<>();
                     for (int i = 0; i < size; i++) {
@@ -404,7 +391,6 @@ public class ChatActivity extends AppCompatActivity {
                         String sender = parts[1];
                         String content = parts[2];
                         boolean isMine = sender.equals(ConnectionManager.getInstance().getMyUsername());
-                        // Parsăm conținutul (text sau imagine)
                         Message m = parseMessageContent(content, isMine);
                         addMessageToUiGeneric(m);
                     }

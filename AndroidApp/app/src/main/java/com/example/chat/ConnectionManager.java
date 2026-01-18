@@ -56,32 +56,27 @@ public class ConnectionManager {
                 out.flush();
             }
 
-            // --- PROTOCOLUL DIN SERVERUL TĂU ---
-            // Server: "Welcome..." și "Do you have an account?"
+            // --- PROTOCOLUL DIN SERVER ---
             String msg = "";
             while (!msg.contains("1. Yes")) {
                 msg = in.readUTF();
             }
-            out.writeUTF("1"); // 1 = Am cont
+            out.writeUTF("1");
 
-            // Server: "What's your name?"
             while (!msg.contains("name?")) {
                 msg = in.readUTF();
             }
             out.writeUTF(username);
             this.myUsername = username;
 
-            // Server: "What's your password?"
             while (!msg.contains("password?")) {
                 msg = in.readUTF();
             }
             out.writeUTF(password);
 
-            // Server: "Login successful!" sau "Login failed!"
-            // Aici trebuie să fim atenți, serverul trimite mai multe mesaje rapid
+
             msg = in.readUTF();
             if (msg.contains("Login successful")) {
-                // Dacă login e ok, serverul trimite imediat lista de useri
                 return "SUCCESS";
             } else {
                 disconnect();
@@ -124,36 +119,31 @@ public class ConnectionManager {
         List<String> data = new ArrayList<>();
         try {
             while (true) {
-                // Citim header-ul
                 String header = in.readUTF();
                 Log.d("DEBUG_CHAT", "Header primit: " + header);
 
-                // 1. Cazul ideal: Am primit datele
                 if ("INBOX_DATA".equals(header)) {
                     int size = in.readInt();
                     for (int i = 0; i < size; i++) {
                         data.add(in.readUTF());
                     }
-                    return data; // Ieșim cu datele
+                    return data;
                 }
-                // 2. Confirmarea de back - o ignorăm și continuăm bucla
+
                 else if ("ACK_BACK".equals(header)) {
                     continue;
                 }
-                // 3. CURĂȚENIE: Mesaje reziduale de la Desktop sau conexiune
-                // Dacă prindem "Attempting..." sau "Connected...", le sărim.
+
                 else if (header.startsWith("Attempting") || header.startsWith("Connected")) {
                     Log.w("DEBUG_CHAT", "Am ignorat un mesaj de stare: " + header);
                     continue;
                 }
-                // 4. Dacă primim istoric din greșeală, îl consumăm ca să nu rămână pe țeavă
                 else if ("CHAT_HISTORY".equals(header)) {
                     int size = in.readInt();
                     for(int i=0; i<size; i++) in.readUTF();
                     continue;
                 }
                 else {
-                    // Dacă e altceva complet neașteptat, ne oprim să nu intrăm în buclă infinită
                     Log.e("DEBUG_CHAT", "Header critic neasteptat: " + header);
                     break;
                 }
@@ -165,7 +155,7 @@ public class ConnectionManager {
     }
     public void disconnect() {
         try {
-            if (out != null) out.writeUTF("exit"); // Spunem serverului pa
+            if (out != null) out.writeUTF("exit");
             if (socket != null) socket.close();
         } catch (IOException e) {
             Log.e("DEBUG_CHAT", "Eroare la citirea inbox-ului: " + e.getMessage());

@@ -32,7 +32,7 @@ public class LoginActivity extends AppCompatActivity {
                 return;
             }
 
-            // Executăm conexiunea pe un thread secundar (obligatoriu în Android)
+            // Executăm conexiunea pe un thread secundar
             new Thread(() -> {
                 String result = ConnectionManager.getInstance().connectAndLogin(username, password);
 

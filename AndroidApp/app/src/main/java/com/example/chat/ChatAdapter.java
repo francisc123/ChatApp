@@ -56,7 +56,6 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageViewHol
         return new MessageViewHolder(view);
     }
 
-    // În ChatAdapter.java
 
     @Override
     public void onBindViewHolder(@NonNull MessageViewHolder holder, int position) {
@@ -82,7 +81,6 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageViewHol
                 holder.messageImage.setImageResource(android.R.drawable.ic_menu_gallery);
             }
 
-            // Click pe Imagine -> Deschide ViewImageActivity
             holder.itemView.setOnClickListener(v -> {
                 if (message.filePath != null) {
                     Intent intent = new Intent(context, ViewImageActivity.class);
@@ -98,7 +96,6 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageViewHol
             String icon = message.fileName.toLowerCase().endsWith(".pdf") ? "📕 " : "📄 ";
             holder.messageText.setText(icon + message.fileName);
 
-            // Click pe Fișier -> Deschide ViewPdfActivity DOAR dacă e PDF
             holder.itemView.setOnClickListener(v -> {
                 if (message.filePath != null) {
 
@@ -126,7 +123,6 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageViewHol
         }
 
         // ================= LONG CLICK (DOWNLOAD) =================
-        // Acesta se aplică peste logică de mai sus fără să o strice
         if (message.type == 1 || message.type == 2) {
             holder.itemView.setOnLongClickListener(v -> {
                 showDownloadDialog(message);
@@ -191,24 +187,20 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageViewHol
 
     private void openFileExternally(Message message) {
         try {
-            // 1. Verificăm fișierul intern
             java.io.File privateFile = new java.io.File(message.filePath);
             if (!privateFile.exists()) {
                 Toast.makeText(context, "Fișierul nu există fizic.", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            // 2. Îl copiem temporar în Downloads ca să fie vizibil pentru alte aplicații
             android.content.ContentValues values = new android.content.ContentValues();
-            // Punem un prefix "Open_" ca să nu se bată cap în cap cu alte descărcări
             values.put(MediaStore.MediaColumns.DISPLAY_NAME, "Open_" + message.fileName);
-            values.put(MediaStore.MediaColumns.MIME_TYPE, "application/octet-stream"); // Tip generic
+            values.put(MediaStore.MediaColumns.MIME_TYPE, "application/octet-stream");
             values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
 
             Uri publicUri = context.getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
 
             if (publicUri != null) {
-                // 3. Copiem efectiv datele (Stream Copy)
                 OutputStream out = context.getContentResolver().openOutputStream(publicUri);
                 java.io.FileInputStream in = new java.io.FileInputStream(privateFile);
 
@@ -220,9 +212,8 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageViewHol
                 out.close();
                 in.close();
 
-                // 4. Lansăm Intent-ul de deschidere
                 Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setDataAndType(publicUri, "*/*"); // Lăsăm Android să decidă cu ce îl deschide
+                intent.setDataAndType(publicUri, "*/*");
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
                 Toast.makeText(context, "Se deschide...", Toast.LENGTH_SHORT).show();
@@ -234,7 +225,6 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageViewHol
         }
     }
 
-    // Clasa ViewHolder actualizată să găsească și imaginea
     static class MessageViewHolder extends RecyclerView.ViewHolder {
         TextView messageText;
         ImageView messageImage;
@@ -242,7 +232,6 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageViewHol
 
         MessageViewHolder(@NonNull View itemView) {
             super(itemView);
-            // Găsim elementele după ID-urile din XML-urile modificate anterior
             messageText = itemView.findViewById(R.id.text_message_body);
             messageImage = itemView.findViewById(R.id.image_message_body);
             cardImage = itemView.findViewById(R.id.card_image);
