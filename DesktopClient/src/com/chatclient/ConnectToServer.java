@@ -8,7 +8,7 @@ public class ConnectToServer {
     private static final String SERVER_ADDRESS = "192.168.1.252";
     private static final int SERVER_PORT = 12345;
     private Socket socket;
-    private DataOutputStream out;
+    private DataOutputStream out ;
     private DataInputStream in;
 
     public static void main(String[] args) {
